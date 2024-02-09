@@ -36,3 +36,48 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+/* Add this CSS to your stylesheet */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.custom-table th, .custom-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.custom-table th {
+  background-color: #f0f0f0;
+}
+
+.custom-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+
+.selected-row {
+  background-color: orange; 
+}
+
+.form-labels {
+  font-weight: bold;
+  color: blue;
+  display: flex;
+  margin-bottom: 5px;
+}
+.form-select {
+  width: 100%; 
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+} 
+
+
+
+
