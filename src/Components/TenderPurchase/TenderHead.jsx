@@ -17,6 +17,7 @@ const UserManagement = () => {
   const [millCode, setMillCode] = useState("");
   const [mc, setMc] = useState("");
   const [label, setLabel] = useState("");
+  
 
   //button code
   const addNewButtonRef = useRef(null);
@@ -31,26 +32,34 @@ const UserManagement = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [highlightedButton, setHighlightedButton] = useState(null);
   const [cancelButtonClicked, setCancelButtonClicked] = useState(false);
+  const [firstTenderData, setFirstTenderData] = useState({});
 
   const [isEditing, setIsEditing] = useState(false);
+ 
+  // const [newTenderId, setNewTenderId] = useState(null);
+
 
   const handleAddOne = async () => {
     try {
       // Fetch the last tender number from the backend
       const response = await fetch("http://localhost:8080/get_last_tender_no");
+  
       if (response.ok) {
         const data = await response.json();
-
+  
         // Calculate the next tender number (max + 1)
         const nextTenderNo = data.lastTenderNo + 1;
-
+  
+        // Set the new tender id in the state
+        // setNewTenderId(nextTenderNo);
+  
         // Reset the form data and other relevant state variables
         setFormData({
           Tender_No: nextTenderNo,
           Tender_Date: "",
           Mill_Code: "",
         });
-
+  
         // Reset other state variables as needed
         setUsers([]);
         setShowPopup(false);
@@ -61,7 +70,7 @@ const UserManagement = () => {
         setMillCode("");
         setMc("");
         setLabel("");
-
+  
         // Disable the add button and enable other buttons
         setAddOneButtonEnabled(false);
         setSaveButtonEnabled(true);
@@ -70,6 +79,8 @@ const UserManagement = () => {
         setDeleteButtonEnabled(false);
         setIsEditMode(false);
         setIsEditing(true);
+        
+  
       } else {
         console.error(
           "Failed to fetch last tender number:",
@@ -81,6 +92,8 @@ const UserManagement = () => {
       console.error("Error during API call:", error);
     }
   };
+  
+  
 
   const handleEdit = () => {
     setIsEditMode(true);
@@ -243,8 +256,10 @@ const UserManagement = () => {
         tenderid: newTenderId,
         tenderdetailid: detail.tenderdetailid,
       }))
+      
     );
-  }, [lastTenderDetails]);
+   
+  }, [lastTenderDetails,newTenderId]);
 
   // Update form data with the last tender data when Cancel button is clicked
   const handleCancel = async () => {
@@ -273,6 +288,9 @@ const UserManagement = () => {
           Tender_Date: data.last_tender_head_data.Tender_Date || "",
           Mill_Code: data.last_tender_head_data.Mill_Code || "",
         }));
+
+        setLastTenderData(data.last_tender_head_data || {});
+         setLastTenderDetails(data.last_tender_details_data || []);
       } else {
         console.error(
           "Failed to fetch last tender data:",
@@ -285,16 +303,111 @@ const UserManagement = () => {
     }
   };
 
-  const handleFirstButtonClick = () => {};
+  const handleFirstButtonClick = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/get_first_tender_data");
+      if (response.ok) {
+        const data = await response.json();
+        setFirstTenderData(data.first_tender_head_data || {});
+        setLastTenderDetails(data.first_tender_details_data || []);
+        // Update form data and other state variables with fetched data
+        setFormData({
+          Tender_No: data.first_tender_head_data.Tender_No || "",
+          Tender_Date: data.first_tender_head_data.Tender_Date || "",
+          Mill_Code: data.first_tender_head_data.Mill_Code || "",
+        });
+        // Additional logic to update other state variables as needed
+      } else {
+        console.error("Failed to fetch first tender data:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
+    }
+  };
+
+
+  useEffect(() => {
+    // Fetch the last tender data when the component mounts
+    fetchLastTenderData();
+
+    // // Fetch the first tender data when the component mounts
+    // handleFirstButtonClick();
+  }, []);
 
   // Function to fetch the last record
-  const handleLastButtonClick = () => {};
+  const handleLastButtonClick = async () => {
+    try {
+        const response = await fetch("http://localhost:8080/get_last_tender_data_Navigation");
+        if (response.ok) {
+            const data = await response.json();
+            newTenderId = data.last_tender_head_data.tenderid;
+            newMillCode = data.last_tender_head_data.Mill_Code;
+            console.log("++++newTenderId+++", newTenderId);
+            console.log("++++Mill_Code+++", newMillCode);
+            setLastTenderData(data.last_tender_head_data || {});
+            setLastTenderDetails(data.last_tender_details_data || []);
+            // Update form data and other state variables with fetched data
+            setFormData({
+                Tender_No: data.last_tender_head_data.Tender_No || "",
+                Tender_Date: data.last_tender_head_data.Tender_Date || "",
+                Mill_Code: data.last_tender_head_data.Mill_Code || "",
+            });
+            // Additional logic to update other state variables as needed
+        } else {
+            console.error("Failed to fetch last tender data:", response.status, response.statusText);
+        }
+    } catch (error) {
+        console.error("Error during API call:", error);
+    }
+};
 
   // Function to fetch the next record
-  const handleNextButtonClick = () => {};
+ // Function to fetch the next record
+const handleNextButtonClick = async () => {
+  try {
+    const response = await fetch(`http://localhost:8080/get_next_tender_data?current_tender_no=${formData.Tender_No}`);
+    if (response.ok) {
+      const data = await response.json();
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        ...data.next_tender_head_data,
+      }));
+      setLastTenderDetails(data.next_tender_details_data || []);
+    } else {
+      console.error("Failed to fetch next tender data:", response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error("Error during API call:", error);
+  }
+};
 
+  
   // Function to fetch the previous record
-  const handlePreviousButtonClick = () => {};
+const handlePreviousButtonClick = async () => {
+  try {
+    // Use formData.Tender_No as the current tender number
+    const response = await fetch(`http://localhost:8080/get_previous_tender_data?current_tender_no=${formData.Tender_No}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+
+      // Assuming setFormData is a function to update the form data
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        ...data.previous_tender_head_data,
+      }));
+
+      // Assuming setTenderDetails is a function to update the tender details
+      setLastTenderDetails(data.previous_tender_details_data || []);
+    } else {
+      console.error("Failed to fetch previous tender data:", response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error("Error during API call:", error);
+  }
+};
+
+
 
   const handleBack = () => {};
 
@@ -445,22 +558,6 @@ const UserManagement = () => {
     }
   };
 
-  // const deleteUser = (user) => {
-  //   if (deleteMode) {
-  //     const updatedUsers = users.filter((u) => u.id !== user.id);
-  //     setUsers(updatedUsers);
-  //     setDeleteMode(false);
-  //   } else {
-  //     // Handle the delete logic here if needed
-  //     console.log("Deleting user:", user.id);
-  //   }
-  // };
-
-  // const generateJsonFile = () => {
-  //   const filteredUsers = users.filter((user) => user.rowaction !== "DNU");
-  //   const jsonData = JSON.stringify(filteredUsers, null, 2);
-  //   console.log("Generated JSON file:", jsonData);
-  // };
 
   const handleMillCode = (code, mc, label) => {
     setMillCode(code);
@@ -478,6 +575,8 @@ const UserManagement = () => {
     });
     console.log("Mill_Code:", millCode);
   };
+
+  
 
   return (
     <>
@@ -604,56 +703,65 @@ const UserManagement = () => {
           </button>
         </div>
         <div style={{ float: "right", marginTop: "-40px" }}>
-          <button
-            style={{
-              border: "1px solid #ccc",
-              backgroundColor: highlightedButton === "first" ? "black" : "blue",
-              color: "white",
-              width: "100px",
-              height: "35px",
-            }}
-            onClick={() => handleFirstButtonClick()}
-          >
-            &lt;&lt;
-          </button>
-          <button
-            style={{
-              border: "1px solid #ccc",
-              backgroundColor:
-                highlightedButton === "previous" ? "black" : "blue",
-              color: "white",
-              width: "100px",
-              height: "35px",
-            }}
-            onClick={() => handlePreviousButtonClick()}
-          >
-            &lt;
-          </button>
-          <button
-            style={{
-              border: "1px solid #ccc",
-              backgroundColor: highlightedButton === "next" ? "black" : "blue",
-              color: "white",
-              width: "100px",
-              height: "35px",
-            }}
-            onClick={() => handleNextButtonClick()}
-          >
-            &gt;
-          </button>
-          <button
-            style={{
-              border: "1px solid #ccc",
-              backgroundColor: highlightedButton === "last" ? "black" : "blue",
-              color: "white",
-              width: "100px",
-              height: "35px",
-            }}
-            onClick={() => handleLastButtonClick()}
-          >
-            &gt;&gt;
-          </button>
-        </div>
+      <button
+        style={{
+          border: "1px solid #ccc",
+          backgroundColor: highlightedButton === "first" ? "black" : "blue",
+          color: "white",
+          width: "100px",
+          height: "35px",
+          cursor: isEditing ? "not-allowed" : "pointer", 
+         
+        }}
+        onClick={() => handleFirstButtonClick()}
+        disabled={isEditing}
+      >
+        &lt;&lt;
+      </button>
+      <button
+        style={{
+          border: "1px solid #ccc",
+          backgroundColor: highlightedButton === "previous" ? "black" : "blue",
+          color: "white",
+          width: "100px",
+          height: "35px",
+          cursor: isEditing ? "not-allowed" : "pointer", 
+          
+        }}
+        onClick={() => handlePreviousButtonClick()}
+        disabled={isEditing}
+      >
+        &lt;
+      </button>
+      <button
+        style={{
+          border: "1px solid #ccc",
+          backgroundColor: highlightedButton === "next" ? "black" : "blue",
+          color: "white",
+          width: "100px",
+          height: "35px",
+          cursor: isEditing ? "not-allowed" : "pointer", 
+        }}
+        onClick={() => handleNextButtonClick()}
+        disabled={isEditing}
+      >
+        &gt;
+      </button>
+      <button
+        style={{
+          border: "1px solid #ccc",
+          backgroundColor: highlightedButton === "last" ? "black" : "blue",
+          color: "white",
+          width: "100px",
+          height: "35px",
+          cursor: isEditing ? "not-allowed" : "pointer", 
+        }}
+        onClick={() => handleLastButtonClick()}
+        disabled={isEditing}
+      >
+        &gt;&gt;
+      </button>
+    </div>
       </div>
 
       {/* Head Part */}
@@ -810,7 +918,7 @@ const UserManagement = () => {
               <th>Bags</th>
               <th>Rowaction</th>
               <th>Mill Code</th>
-              <th>MC</th>
+              {/* <th>MC</th> */}
               <th>tenderdetailid</th>
             </tr>
           </thead>
@@ -854,7 +962,7 @@ const UserManagement = () => {
                 <td>{user.userId}</td>
                 <td>{user.rowaction}</td>
                 <td>{user.millCode}</td>
-                <td>{user.mc}</td>
+                {/* <td>{user.mc}</td> */}
                 <td>{user.tenderdetailid}</td>
               </tr>
             ))}
