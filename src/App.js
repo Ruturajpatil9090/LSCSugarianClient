@@ -1,15 +1,17 @@
-import logo from './logo.svg';
 import './App.css';
-import AccountHelp from "./Components/TenderPurchase/TenderHead"
-// import TenderUtility from "./Components/TenderPurchase/TenderUtility"
-import "bootstrap/dist/css/bootstrap.min.css"; 
+import TenderHead from "./Components/TenderPurchase/TenderHead";
+import TenderUtility from "./Components/TenderPurchase/TenderUtility";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   return (
-    <div className="App">
-        <AccountHelp/>
-        {/* <TenderUtility/> */}
-    </div>
+    <Router>
+      <Routes>
+        <Route exact path="/" element={<TenderUtility />} />
+        <Route path="/tender_head" element={<TenderHead />} />
+      </Routes>
+    </Router>
   );
 }
 

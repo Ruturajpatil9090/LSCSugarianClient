@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ApiMill_Code from "../Common/AccountMasterHelp";
 import axios from "axios";
+import { useNavigate,useLocation  } from "react-router-dom";
 
 var newTenderId = "";
 var newMillCode = "";
@@ -17,6 +18,7 @@ const UserManagement = () => {
   const [millCode, setMillCode] = useState("");
   const [mc, setMc] = useState("");
   const [label, setLabel] = useState("");
+  const navigate = useNavigate();
   
 
   //button code
@@ -49,10 +51,6 @@ const UserManagement = () => {
   
         // Calculate the next tender number (max + 1)
         const nextTenderNo = data.lastTenderNo + 1;
-  
-        // Set the new tender id in the state
-        // setNewTenderId(nextTenderNo);
-  
         // Reset the form data and other relevant state variables
         setFormData({
           Tender_No: nextTenderNo,
@@ -70,6 +68,7 @@ const UserManagement = () => {
         setMillCode("");
         setMc("");
         setLabel("");
+        newMillCode = ""
   
         // Disable the add button and enable other buttons
         setAddOneButtonEnabled(false);
@@ -94,7 +93,6 @@ const UserManagement = () => {
   };
   
   
-
   const handleEdit = () => {
     setIsEditMode(true);
     setAddOneButtonEnabled(false);
@@ -242,25 +240,6 @@ const UserManagement = () => {
 
   const [lastTenderDetails, setLastTenderDetails] = useState([]);
 
-  useEffect(() => {
-    setUsers(
-      lastTenderDetails.map((detail) => ({
-        // id: detail.id,
-        Buyer: detail.Buyer,
-        Lifting_Date: detail.Lifting_Date,
-        userId: detail.Bags,
-        rowaction: "Normal",
-        millCode: detail.Mill_Code,
-        mc: detail.MC,
-        id: detail.ID,
-        tenderid: newTenderId,
-        tenderdetailid: detail.tenderdetailid,
-      }))
-      
-    );
-   
-  }, [lastTenderDetails,newTenderId]);
-
   // Update form data with the last tender data when Cancel button is clicked
   const handleCancel = async () => {
     setIsEditing(false);
@@ -280,6 +259,7 @@ const UserManagement = () => {
       );
       if (response.ok) {
         const data = await response.json();
+        console.log("csncelData",data)
 
         // Update form data with the last tender data
         setFormData((prevData) => ({
@@ -290,7 +270,7 @@ const UserManagement = () => {
         }));
 
         setLastTenderData(data.last_tender_head_data || {});
-         setLastTenderDetails(data.last_tender_details_data || []);
+        setLastTenderDetails(data.last_tender_details_data || []);
       } else {
         console.error(
           "Failed to fetch last tender data:",
@@ -308,15 +288,18 @@ const UserManagement = () => {
       const response = await fetch("http://localhost:8080/get_first_tender_data");
       if (response.ok) {
         const data = await response.json();
+        newMillCode = data.first_tender_head_data.Mill_Code
         setFirstTenderData(data.first_tender_head_data || {});
         setLastTenderDetails(data.first_tender_details_data || []);
         // Update form data and other state variables with fetched data
+        
         setFormData({
           Tender_No: data.first_tender_head_data.Tender_No || "",
           Tender_Date: data.first_tender_head_data.Tender_Date || "",
-          Mill_Code: data.first_tender_head_data.Mill_Code || "",
+          Mill_Code: newMillCode || "",
         });
         // Additional logic to update other state variables as needed
+        
       } else {
         console.error("Failed to fetch first tender data:", response.status, response.statusText);
       }
@@ -329,9 +312,6 @@ const UserManagement = () => {
   useEffect(() => {
     // Fetch the last tender data when the component mounts
     fetchLastTenderData();
-
-    // // Fetch the first tender data when the component mounts
-    // handleFirstButtonClick();
   }, []);
 
   // Function to fetch the last record
@@ -350,7 +330,7 @@ const UserManagement = () => {
             setFormData({
                 Tender_No: data.last_tender_head_data.Tender_No || "",
                 Tender_Date: data.last_tender_head_data.Tender_Date || "",
-                Mill_Code: data.last_tender_head_data.Mill_Code || "",
+                Mill_Code:newMillCode || "",
             });
             // Additional logic to update other state variables as needed
         } else {
@@ -362,15 +342,16 @@ const UserManagement = () => {
 };
 
   // Function to fetch the next record
- // Function to fetch the next record
 const handleNextButtonClick = async () => {
   try {
     const response = await fetch(`http://localhost:8080/get_next_tender_data?current_tender_no=${formData.Tender_No}`);
     if (response.ok) {
       const data = await response.json();
+      newMillCode = data.next_tender_head_data.Mill_Code
       setFormData((prevFormData) => ({
         ...prevFormData,
         ...data.next_tender_head_data,
+        Mill_Code:newMillCode || "",
       }));
       setLastTenderDetails(data.next_tender_details_data || []);
     } else {
@@ -390,7 +371,7 @@ const handlePreviousButtonClick = async () => {
     
     if (response.ok) {
       const data = await response.json();
-
+      newMillCode = data.previous_tender_head_data.Mill_Code
       // Assuming setFormData is a function to update the form data
       setFormData((prevFormData) => ({
         ...prevFormData,
@@ -407,9 +388,84 @@ const handlePreviousButtonClick = async () => {
   }
 };
 
+const location = useLocation();
+const selectedRecord = location.state && location.state.selectedRecord;
 
 
-  const handleBack = () => {};
+console.log("editRecordData TenderHead", selectedRecord);
+
+useEffect(() => {
+  if (selectedRecord) {
+    newMillCode = selectedRecord.Mill_Code 
+    const formattedDate = selectedRecord.Tender_Date
+      ? selectedRecord.Tender_Date.split("/").reverse().join("-")
+      : "";
+
+      const LiftingFormatedDate = selectedRecord.Lifting_Date
+      ? selectedRecord.Tender_Date.split("/").reverse().join("-")
+      : "";
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      Tender_No: selectedRecord.Tender_No || "",
+      Tender_Date: formattedDate,
+      Mill_Code:newMillCode || "",
+    }));
+    
+    // Create an array containing the single detail object
+    const userDetails = [{
+      id: selectedRecord.ID,
+      Buyer: selectedRecord.Buyer,
+      Lifting_Date: LiftingFormatedDate,
+      userId: selectedRecord.Bags,
+      rowaction: "Normal",
+      millCode: selectedRecord.Mill_Code,
+      mc: selectedRecord.MC,
+      tenderid: newTenderId, 
+      tenderdetailid: selectedRecord.tenderdetailid,
+    }];
+    console.log("userDetails:", userDetails);
+    
+    setUsers(userDetails);
+    
+    setAddOneButtonEnabled(true);
+    setEditButtonEnabled(true);
+    setDeleteButtonEnabled(true);
+    setBackButtonEnabled(true);
+    setSaveButtonEnabled(false);
+    setCancelButtonEnabled(false);
+    setCancelButtonClicked(true);
+  } else {
+    handleAddOne();
+  }
+}, [selectedRecord]);
+
+
+
+useEffect(() => {
+  setUsers(
+    lastTenderDetails.map((detail) => ({
+      // id: detail.id,
+      Buyer: detail.Buyer,
+      Lifting_Date: detail.Lifting_Date,
+      userId: detail.Bags,
+      rowaction: "Normal",
+      millCode: detail.Mill_Code,
+      mc: detail.MC,
+      id: detail.ID,
+      tenderid: newTenderId,
+      tenderdetailid: detail.tenderdetailid,
+    }))
+    
+  );
+ 
+}, [lastTenderDetails,newTenderId]);
+
+
+ 
+  const handleBack = () => {
+    navigate("/")
+  };
 
   //Head section code
   const [formData, setFormData] = useState({
@@ -577,11 +633,10 @@ const handlePreviousButtonClick = async () => {
   };
 
   
-
   return (
     <>
       {/* button part */}
-      <div>
+      <div className="container">
         <div
           style={{
             marginTop: "10px",
@@ -605,7 +660,7 @@ const handlePreviousButtonClick = async () => {
               fontSize: "12px",
             }}
           >
-            Add New
+            Add
           </button>
           {isEditMode ? (
             <button
@@ -765,8 +820,8 @@ const handlePreviousButtonClick = async () => {
       </div>
 
       {/* Head Part */}
-      <form className="d-flex" onSubmit={handleSubmit}>
-        <div className="d-flex align-items-center col-md-1">
+      <form className="d-flex container" onSubmit={handleSubmit}>
+        <div className="d-flex align-items-center col-md-2">
           <label className="form-label">TenderNo:</label>
           <input
             type="text"
@@ -802,27 +857,29 @@ const handlePreviousButtonClick = async () => {
             companyCode={1}
             name="Mill_Code"
             onAcCodeClick={handleMillCodeHead}
-            newMillCode={newMillCode}
+            newMillCode={ newMillCode }
           />
         </div>
 
-        {/* <button type="submit" className="btn btn-primary ms-3">
-          Submit
-        </button> */}
+        
       </form>
 
-      {/* //detail part */}
+      {/*detail part */}
       <div className="container mt-4">
         <button
           className="btn btn-primary"
           onClick={openPopup}
           disabled={!isEditing}
         >
-          Add New User
+          Add New Detail
         </button>
-        {/* <button className="btn btn-info" onClick={generateJsonFile}>
-        Save
-      </button> */}
+        <button
+          className="btn btn-danger"
+          disabled={!isEditing}
+          style={{marginLeft:"10px"}}
+        >
+          Close
+        </button>
         {showPopup && (
           <div
             className="modal"
@@ -916,8 +973,8 @@ const handlePreviousButtonClick = async () => {
               <th>Buyer</th>
               <th>Date</th>
               <th>Bags</th>
-              <th>Rowaction</th>
-              <th>Mill Code</th>
+              {/* <th>Rowaction</th> */}
+              {/* <th>Mill Code</th> */}
               {/* <th>MC</th> */}
               <th>tenderdetailid</th>
             </tr>
@@ -960,8 +1017,8 @@ const handlePreviousButtonClick = async () => {
                 <td>{user.Buyer}</td>
                 <td>{user.Lifting_Date}</td>
                 <td>{user.userId}</td>
-                <td>{user.rowaction}</td>
-                <td>{user.millCode}</td>
+                {/* <td>{user.rowaction}</td> */}
+                {/* <td>{user.millCode}</td> */}
                 {/* <td>{user.mc}</td> */}
                 <td>{user.tenderdetailid}</td>
               </tr>

@@ -13,6 +13,7 @@ function DataTableSearch({ data, onSearch }) {
     height: "60px", 
     fontSize: "14px" ,
     width:"30px",
+   
   };
 
   return (

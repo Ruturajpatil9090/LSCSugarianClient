@@ -6,13 +6,13 @@ function SearchBar({ value, onChange,onSearchClick }) {
     <div className="controls">
       <TextField
         id="search"
-        label="Search by Title"
+        label="Enter Title"
         variant="outlined"
         value={value}
         onChange={onChange}
-        placeholder="Enter title..."
+        placeholder="Search by millshortname.."
         onClick={onSearchClick} 
-        style={{"float":"right"}}
+        style={{"float":"right",  "borderRadius": "25px"}}
       />
     </div>
   );

@@ -100,9 +100,6 @@ const ApiDataTableModal = ({ onAcCodeClick, acType,name,companyCode,millData,mc,
     }
   };
 
-
-
-
   //After open popup onDoubleClick event that record display on the feilds
   const handleRecordDoubleClick = (item) => {
     if (lActiveInputFeild === name) {
@@ -113,7 +110,7 @@ const ApiDataTableModal = ({ onAcCodeClick, acType,name,companyCode,millData,mc,
       setEnteredAcName(item.Ac_Name_E);
   
       if (onAcCodeClick) {
-        onAcCodeClick(item.Ac_Code,mc,enteredAcName);
+        onAcCodeClick(item.Ac_Code,mc,enteredAcName,enteredAcCode);
       }
     } 
 
@@ -183,9 +180,10 @@ const ApiDataTableModal = ({ onAcCodeClick, acType,name,companyCode,millData,mc,
             className="form-control ms-2"
             id={name}
             autoComplete="off"
-            value={enteredAcCode || millData || millcode || newMillCode}
+            value={enteredAcCode !== '' ? enteredAcCode : newMillCode}
             onChange={handleAcCodeChange}
             style={{ width: "150px", height: "35px" }}
+            // disabled={newMillCode}
            
           />
           <Button

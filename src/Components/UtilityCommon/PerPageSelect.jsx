@@ -9,9 +9,9 @@ function PerPageSelect({ value, onChange }) {
   return (
     <div className="controls">
       <Form.Group className="mb-3" style={{ float: "left", marginLeft: "150px" }}>
-        <Form.Label id="perPage-label">Posts per page</Form.Label>
+        <Form.Label id="perPage-label">Posts Per Page</Form.Label>
         <Form.Select
-          aria-label="Posts per page"
+          aria-label="Postsm Per Page"
           value={value}
           onChange={onChange}
         >
@@ -19,8 +19,6 @@ function PerPageSelect({ value, onChange }) {
             <option key={option} value={option}>
               {option}
             </option>
-
-//2.The {options.map(...) => block iterates over the options array to create a set of option elements for the dropdown. 
           ))}
         </Form.Select>
       </Form.Group>
