@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, Modal } from "react-bootstrap";
-import DataTableSearch from "./DataTableSearch";
-import DataTablePagination from "./DataTablePagination";
+import DataTableSearch from "../Common/HelpCommon/DataTableSearch";
+import DataTablePagination from "../Common/HelpCommon/DataTablePagination";
 import axios from "axios";
 import "../../App.css";
 

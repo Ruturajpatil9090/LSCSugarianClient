@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import ApiMill_Code from "../Common/AccountMasterHelp";
+import ApiMill_Code from "../Helps/AccountMasterHelp";
 import axios from "axios";
-import { useNavigate,useLocation  } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import ActionButtonGroup from '../Common/CommonButtons/ActionButtonGroup';
+import NavigationButtons from "../Common/CommonButtons/NavigationButtons";
 
 var newTenderId = "";
 var newMillCode = "";
@@ -19,10 +21,7 @@ const UserManagement = () => {
   const [mc, setMc] = useState("");
   const [label, setLabel] = useState("");
   const navigate = useNavigate();
-  
 
-  //button code
-  const addNewButtonRef = useRef(null);
   const [updateButtonClicked, setUpdateButtonClicked] = useState(false);
   const [saveButtonClicked, setSaveButtonClicked] = useState(false);
   const [addOneButtonEnabled, setAddOneButtonEnabled] = useState(false);
@@ -35,30 +34,23 @@ const UserManagement = () => {
   const [highlightedButton, setHighlightedButton] = useState(null);
   const [cancelButtonClicked, setCancelButtonClicked] = useState(false);
   const [firstTenderData, setFirstTenderData] = useState({});
-
   const [isEditing, setIsEditing] = useState(false);
- 
-  // const [newTenderId, setNewTenderId] = useState(null);
 
+  const [lastTenderDetails, setLastTenderDetails] = useState([]);
 
+  //handle Add button Functionality
   const handleAddOne = async () => {
     try {
-      // Fetch the last tender number from the backend
       const response = await fetch("http://localhost:8080/get_last_tender_no");
-  
       if (response.ok) {
         const data = await response.json();
-  
-        // Calculate the next tender number (max + 1)
         const nextTenderNo = data.lastTenderNo + 1;
-        // Reset the form data and other relevant state variables
         setFormData({
           Tender_No: nextTenderNo,
           Tender_Date: "",
           Mill_Code: "",
         });
-  
-        // Reset other state variables as needed
+
         setUsers([]);
         setShowPopup(false);
         setSelectedUser({});
@@ -69,7 +61,7 @@ const UserManagement = () => {
         setMc("");
         setLabel("");
         newMillCode = ""
-  
+
         // Disable the add button and enable other buttons
         setAddOneButtonEnabled(false);
         setSaveButtonEnabled(true);
@@ -78,8 +70,6 @@ const UserManagement = () => {
         setDeleteButtonEnabled(false);
         setIsEditMode(false);
         setIsEditing(true);
-        
-  
       } else {
         console.error(
           "Failed to fetch last tender number:",
@@ -91,8 +81,8 @@ const UserManagement = () => {
       console.error("Error during API call:", error);
     }
   };
-  
-  
+
+  //handle Edit button Functionality
   const handleEdit = () => {
     setIsEditMode(true);
     setAddOneButtonEnabled(false);
@@ -104,10 +94,9 @@ const UserManagement = () => {
     setIsEditing(true);
   };
 
+  //handle New record insert in datatbase and update the record Functionality
   const handleSaveOrUpdate = async () => {
-
     setIsEditing(true);
-
     const headData = {
       Company_Code: 1,
       Year_Code: 1,
@@ -168,8 +157,8 @@ const UserManagement = () => {
     }
   };
 
+//handle Delete the record from database functionality
   const handleDelete = async () => {
-    // Show confirmation popup
     const isConfirmed = window.confirm(
       `Are you sure you want to delete this tender ID ${newTenderId}?`
     );
@@ -201,7 +190,6 @@ const UserManagement = () => {
         console.error("Error during API call:", error);
       }
     } else {
-      // User clicked 'Cancel' in the confirmation popup
       console.log("Deletion cancelled");
     }
   };
@@ -209,38 +197,38 @@ const UserManagement = () => {
   const [lastTenderData, setLastTenderData] = useState({});
   const [lastTenderDetailData, setLastTenderDetailData] = useState([]);
 
-  const fetchLastTenderData = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:8080/get_last_tender_data"
-      );
-      if (response.ok) {
-        const data = await response.json();
-        newTenderId = data.last_tender_head_data.tenderid;
-        newMillCode = data.last_tender_head_data.Mill_Code;
-        console.log("++++newTenderId+++", newTenderId);
-        console.log("++++Mill_Code+++", newMillCode);
-        setLastTenderData(data.last_tender_head_data || {});
-        setLastTenderDetails(data.last_tender_details_data || []);
-      } else {
-        console.error(
-          "Failed to fetch last tender data:",
-          response.status,
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error("Error during API call:", error);
-    }
-  };
+  // const fetchLastTenderData = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "http://localhost:8080/get_last_tender_data"
+  //     );
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       newTenderId = data.last_tender_head_data.tenderid;
+  //       newMillCode = data.last_tender_head_data.Mill_Code;
+  //       console.log("++++newTenderId+++", newTenderId);
+  //       console.log("++++Mill_Code+++", newMillCode);
+  //       setLastTenderData(data.last_tender_head_data || {});
+  //       setLastTenderDetails(data.last_tender_details_data || []);
+  //     } else {
+  //       console.error(
+  //         "Failed to fetch last tender data:",
+  //         response.status,
+  //         response.statusText
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during API call:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    handleAddOne();
-  }, []);
+  // useEffect(() => {
+  //   handleAddOne();
+  // }, []);
 
-  const [lastTenderDetails, setLastTenderDetails] = useState([]);
 
-  // Update form data with the last tender data when Cancel button is clicked
+
+  // handleCancel button cliked show the last record for edit functionality
   const handleCancel = async () => {
     setIsEditing(false);
     setIsEditMode(false);
@@ -251,7 +239,6 @@ const UserManagement = () => {
     setSaveButtonEnabled(false);
     setCancelButtonEnabled(false);
     setCancelButtonClicked(true);
-    fetchLastTenderData();
 
     try {
       const response = await fetch(
@@ -259,14 +246,15 @@ const UserManagement = () => {
       );
       if (response.ok) {
         const data = await response.json();
-        console.log("csncelData",data)
+        console.log("csncelData", data)
+        newMillCode = data.last_tender_head_data.Mill_Code
 
         // Update form data with the last tender data
         setFormData((prevData) => ({
           ...prevData,
           Tender_No: data.last_tender_head_data.Tender_No || "",
           Tender_Date: data.last_tender_head_data.Tender_Date || "",
-          Mill_Code: data.last_tender_head_data.Mill_Code || "",
+          Mill_Code: newMillCode || "",
         }));
 
         setLastTenderData(data.last_tender_head_data || {});
@@ -283,6 +271,7 @@ const UserManagement = () => {
     }
   };
 
+//Navigation Functionality to show first,previous,next and last record functionality
   const handleFirstButtonClick = async () => {
     try {
       const response = await fetch("http://localhost:8080/get_first_tender_data");
@@ -291,15 +280,12 @@ const UserManagement = () => {
         newMillCode = data.first_tender_head_data.Mill_Code
         setFirstTenderData(data.first_tender_head_data || {});
         setLastTenderDetails(data.first_tender_details_data || []);
-        // Update form data and other state variables with fetched data
-        
         setFormData({
           Tender_No: data.first_tender_head_data.Tender_No || "",
           Tender_Date: data.first_tender_head_data.Tender_Date || "",
           Mill_Code: newMillCode || "",
         });
-        // Additional logic to update other state variables as needed
-        
+
       } else {
         console.error("Failed to fetch first tender data:", response.status, response.statusText);
       }
@@ -309,125 +295,101 @@ const UserManagement = () => {
   };
 
 
-  useEffect(() => {
-    // Fetch the last tender data when the component mounts
-    fetchLastTenderData();
-  }, []);
+  // useEffect(() => {
+  //   fetchLastTenderData();
+  // }, []);
 
   // Function to fetch the last record
   const handleLastButtonClick = async () => {
     try {
-        const response = await fetch("http://localhost:8080/get_last_tender_data_Navigation");
-        if (response.ok) {
-            const data = await response.json();
-            newTenderId = data.last_tender_head_data.tenderid;
-            newMillCode = data.last_tender_head_data.Mill_Code;
-            console.log("++++newTenderId+++", newTenderId);
-            console.log("++++Mill_Code+++", newMillCode);
-            setLastTenderData(data.last_tender_head_data || {});
-            setLastTenderDetails(data.last_tender_details_data || []);
-            // Update form data and other state variables with fetched data
-            setFormData({
-                Tender_No: data.last_tender_head_data.Tender_No || "",
-                Tender_Date: data.last_tender_head_data.Tender_Date || "",
-                Mill_Code:newMillCode || "",
-            });
-            // Additional logic to update other state variables as needed
-        } else {
-            console.error("Failed to fetch last tender data:", response.status, response.statusText);
-        }
+      const response = await fetch("http://localhost:8080/get_last_tender_data_Navigation");
+      if (response.ok) {
+        const data = await response.json();
+        newTenderId = data.last_tender_head_data.tenderid;
+        newMillCode = data.last_tender_head_data.Mill_Code;
+        console.log("++++newTenderId+++", newTenderId);
+        console.log("++++Mill_Code+++", newMillCode);
+        setLastTenderData(data.last_tender_head_data || {});
+        setLastTenderDetails(data.last_tender_details_data || []);
+        // Update form data and other state variables with fetched data
+        setFormData({
+          Tender_No: data.last_tender_head_data.Tender_No || "",
+          Tender_Date: data.last_tender_head_data.Tender_Date || "",
+          Mill_Code: newMillCode || "",
+        });
+       
+      } else {
+        console.error("Failed to fetch last tender data:", response.status, response.statusText);
+      }
     } catch (error) {
-        console.error("Error during API call:", error);
+      console.error("Error during API call:", error);
     }
-};
+  };
 
   // Function to fetch the next record
-const handleNextButtonClick = async () => {
-  try {
-    const response = await fetch(`http://localhost:8080/get_next_tender_data?current_tender_no=${formData.Tender_No}`);
-    if (response.ok) {
-      const data = await response.json();
-      newMillCode = data.next_tender_head_data.Mill_Code
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        ...data.next_tender_head_data,
-        Mill_Code:newMillCode || "",
-      }));
-      setLastTenderDetails(data.next_tender_details_data || []);
-    } else {
-      console.error("Failed to fetch next tender data:", response.status, response.statusText);
+  const handleNextButtonClick = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/get_next_tender_data?current_tender_no=${formData.Tender_No}`);
+      if (response.ok) {
+        const data = await response.json();
+        newMillCode = data.next_tender_head_data.Mill_Code
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          ...data.next_tender_head_data,
+          Mill_Code: newMillCode || "",
+        }));
+        setLastTenderDetails(data.next_tender_details_data || []);
+      } else {
+        console.error("Failed to fetch next tender data:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
     }
-  } catch (error) {
-    console.error("Error during API call:", error);
-  }
-};
+  };
 
-  
+
   // Function to fetch the previous record
-const handlePreviousButtonClick = async () => {
-  try {
-    // Use formData.Tender_No as the current tender number
-    const response = await fetch(`http://localhost:8080/get_previous_tender_data?current_tender_no=${formData.Tender_No}`);
-    
-    if (response.ok) {
-      const data = await response.json();
-      newMillCode = data.previous_tender_head_data.Mill_Code
-      // Assuming setFormData is a function to update the form data
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        ...data.previous_tender_head_data,
-      }));
+  const handlePreviousButtonClick = async () => {
+    try {
+      // Use formData.Tender_No as the current tender number
+      const response = await fetch(`http://localhost:8080/get_previous_tender_data?current_tender_no=${formData.Tender_No}`);
 
-      // Assuming setTenderDetails is a function to update the tender details
-      setLastTenderDetails(data.previous_tender_details_data || []);
-    } else {
-      console.error("Failed to fetch previous tender data:", response.status, response.statusText);
+      if (response.ok) {
+        const data = await response.json();
+        newMillCode = data.previous_tender_head_data.Mill_Code
+        // Assuming setFormData is a function to update the form data
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          ...data.previous_tender_head_data,
+        }));
+
+        // Assuming setTenderDetails is a function to update the tender details
+        setLastTenderDetails(data.previous_tender_details_data || []);
+      } else {
+        console.error("Failed to fetch previous tender data:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
     }
-  } catch (error) {
-    console.error("Error during API call:", error);
-  }
-};
-
-const location = useLocation();
-const selectedRecord = location.state && location.state.selectedRecord;
+  };
 
 
-console.log("editRecordData TenderHead", selectedRecord);
+  //In utility page record doubleClicked that recod show for edit functionality
+  const location = useLocation();
+  const selectedRecord = location.state?.selectedRecord;
+  console.log("editRecordData TenderHead", selectedRecord);
 
-useEffect(() => {
-  if (selectedRecord) {
-    newMillCode = selectedRecord.Mill_Code 
-    const formattedDate = selectedRecord.Tender_Date
-      ? selectedRecord.Tender_Date.split("/").reverse().join("-")
-      : "";
+  useEffect(() => {
+    if (selectedRecord) {
+      handlerecordDoubleClicked();
+    } else {
+      handleAddOne();
+    }
+  }, [selectedRecord]);
 
-      const LiftingFormatedDate = selectedRecord.Lifting_Date
-      ? selectedRecord.Tender_Date.split("/").reverse().join("-")
-      : "";
-
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      Tender_No: selectedRecord.Tender_No || "",
-      Tender_Date: formattedDate,
-      Mill_Code:newMillCode || "",
-    }));
-    
-    // Create an array containing the single detail object
-    const userDetails = [{
-      id: selectedRecord.ID,
-      Buyer: selectedRecord.Buyer,
-      Lifting_Date: LiftingFormatedDate,
-      userId: selectedRecord.Bags,
-      rowaction: "Normal",
-      millCode: selectedRecord.Mill_Code,
-      mc: selectedRecord.MC,
-      tenderid: newTenderId, 
-      tenderdetailid: selectedRecord.tenderdetailid,
-    }];
-    console.log("userDetails:", userDetails);
-    
-    setUsers(userDetails);
-    
+  const handlerecordDoubleClicked = async () => {
+    setIsEditing(false);
+    setIsEditMode(false);
     setAddOneButtonEnabled(true);
     setEditButtonEnabled(true);
     setDeleteButtonEnabled(true);
@@ -435,39 +397,72 @@ useEffect(() => {
     setSaveButtonEnabled(false);
     setCancelButtonEnabled(false);
     setCancelButtonClicked(true);
-  } else {
-    handleAddOne();
-  }
-}, [selectedRecord]);
 
+    try {
+      const response = await axios.get(`http://localhost:8080/get_tender_data_by_id?tenderid=${selectedRecord?.tenderid}`);
+      if (response.status === 200) {
+        const data = response.data;
+        newMillCode = data.tender_head_data.Mill_Code
+        newTenderId = data.tender_head_data.tenderid
+        // Update form data with the last tender data
+        setFormData(prevData => ({
+          ...prevData,
+          Tender_No: data.tender_head_data?.Tender_No || "",
+          Tender_Date: data.tender_head_data?.Tender_Date || "",
+          Mill_Code: newMillCode || "",
+        }));
 
+        setLastTenderData(data.tender_head_data || {});
+        setLastTenderDetails(data.tender_details_data || []);
+      } else {
+        console.error("Failed to fetch last tender data:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
+    }
+  };
 
-useEffect(() => {
-  setUsers(
-    lastTenderDetails.map((detail) => ({
-      // id: detail.id,
-      Buyer: detail.Buyer,
-      Lifting_Date: detail.Lifting_Date,
-      userId: detail.Bags,
-      rowaction: "Normal",
-      millCode: detail.Mill_Code,
-      mc: detail.MC,
-      id: detail.ID,
-      tenderid: newTenderId,
-      tenderdetailid: detail.tenderdetailid,
-    }))
-    
-  );
- 
-}, [lastTenderDetails,newTenderId]);
+  useEffect(() => {
+    if (selectedRecord) {
+      setUsers(
+        lastTenderDetails.map((detail) => ({
+          Buyer: detail.Buyer,
+          Lifting_Date: detail.Lifting_Date,
+          userId: detail.Bags,
+          rowaction: "Normal",
+          millCode: detail.Mill_Code,
+          mc: detail.MC,
+          id: detail.ID,
+          tenderid: detail.tenderid,
+          tenderdetailid: detail.tenderdetailid,
+        }))
+      );
 
+    }
+  }, [selectedRecord, lastTenderDetails]);
 
- 
+  useEffect(() => {
+    setUsers(
+      lastTenderDetails.map((detail) => ({
+        Buyer: detail.Buyer,
+        Lifting_Date: detail.Lifting_Date,
+        userId: detail.Bags,
+        rowaction: "Normal",
+        millCode: detail.Mill_Code,
+        mc: detail.MC,
+        id: detail.ID,
+        tenderid: detail.tenderid,
+        tenderdetailid: detail.tenderdetailid,
+      }))
+    );
+  }, [lastTenderDetails]);
+
+//handle back to Utility page.
   const handleBack = () => {
     navigate("/")
   };
 
-  //Head section code
+  //Head data functionality code.
   const [formData, setFormData] = useState({
     Tender_No: "",
     Tender_Date: "",
@@ -497,7 +492,8 @@ useEffect(() => {
     console.log("Form Data Submitted:", formData);
   };
 
-  //detail section code
+
+  //detail data functionality code.
   const openPopup = () => {
     setShowPopup(true);
   };
@@ -567,7 +563,6 @@ useEffect(() => {
   };
 
   const deleteModeHandler = (user) => {
-    debugger;
     if (isEditMode && user.rowaction === "add") {
       setDeleteMode(true);
       setSelectedUser(user);
@@ -632,191 +627,37 @@ useEffect(() => {
     console.log("Mill_Code:", millCode);
   };
 
-  
   return (
     <>
-      {/* button part */}
+      {/* Action button  */}
       <div className="container">
-        <div
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-            display: "flex",
-            gap: "10px",
-          }}
-        >
-          <button
-            onClick={handleAddOne}
-            ref={addNewButtonRef}
-            disabled={!addOneButtonEnabled}
-            tabIndex={0}
-            style={{
-              backgroundColor: addOneButtonEnabled ? "blue" : "white",
-              color: addOneButtonEnabled ? "white" : "black",
-              border: "1px solid #ccc",
-              cursor: "pointer",
-              width: "4%",
-              height: "35px",
-              fontSize: "12px",
-            }}
-          >
-            Add
-          </button>
-          {isEditMode ? (
-            <button
-              onClick={handleSaveOrUpdate}
-              id="update"
-              style={{
-                backgroundColor: "blue",
-                color: "white",
-                border: "1px solid #ccc",
-                cursor: "pointer",
-                width: "4%",
-                height: "35px",
-                fontSize: "12px",
-              }}
-            >
-              update
-            </button>
-          ) : (
-            <button
-              onClick={handleSaveOrUpdate}
-              disabled={!saveButtonEnabled}
-              id="save"
-              style={{
-                backgroundColor: saveButtonEnabled ? "blue" : "white",
-                color: saveButtonEnabled ? "white" : "black",
-                border: "1px solid #ccc",
-                cursor: saveButtonEnabled ? "pointer" : "not-allowed",
-                width: "4%",
-                height: "35px",
-                fontSize: "12px",
-              }}
-            >
-              Save
-            </button>
-          )}
-          <button
-            onClick={handleEdit}
-            disabled={!editButtonEnabled}
-            style={{
-              backgroundColor: editButtonEnabled ? "blue" : "white",
-              color: editButtonEnabled ? "white" : "black",
-              border: "1px solid #ccc",
-              cursor: editButtonEnabled ? "pointer" : "not-allowed",
-              width: "4%",
-              height: "35px",
-              fontSize: "12px",
-            }}
-          >
-            Edit
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={!deleteButtonEnabled}
-            style={{
-              backgroundColor: deleteButtonEnabled ? "blue" : "white",
-              color: deleteButtonEnabled ? "white" : "black",
-              border: "1px solid #ccc",
-              cursor: deleteButtonEnabled ? "pointer" : "not-allowed",
-              width: "4%",
-              height: "35px",
-              fontSize: "12px",
-            }}
-          >
-            Delete
-          </button>
-          <button
-            onClick={handleCancel}
-            disabled={!cancelButtonEnabled}
-            style={{
-              backgroundColor: cancelButtonEnabled ? "blue" : "white",
-              color: cancelButtonEnabled ? "white" : "black",
-              border: "1px solid #ccc",
-              cursor: cancelButtonEnabled ? "pointer" : "not-allowed",
-              width: "4%",
-              height: "35px",
-              fontSize: "12px",
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleBack}
-            disabled={!backButtonEnabled}
-            style={{
-              backgroundColor: backButtonEnabled ? "blue" : "white",
-              color: backButtonEnabled ? "white" : "black",
-              border: "1px solid #ccc",
-              cursor: backButtonEnabled ? "pointer" : "not-allowed",
-              width: "4%",
-              height: "35px",
-              fontSize: "12px",
-            }}
-          >
-            Back
-          </button>
+        <ActionButtonGroup
+          handleAddOne={handleAddOne}
+          addOneButtonEnabled={addOneButtonEnabled}
+          handleSaveOrUpdate={handleSaveOrUpdate}
+          saveButtonEnabled={saveButtonEnabled}
+          isEditMode={isEditMode}
+          handleEdit={handleEdit}
+          editButtonEnabled={editButtonEnabled}
+          handleDelete={handleDelete}
+          deleteButtonEnabled={deleteButtonEnabled}
+          handleCancel={handleCancel}
+          cancelButtonEnabled={cancelButtonEnabled}
+          handleBack={handleBack}
+          backButtonEnabled={backButtonEnabled}
+        />
+        <div>
+          {/* Navigation Buttons */}
+          <NavigationButtons
+            handleFirstButtonClick={handleFirstButtonClick}
+            handlePreviousButtonClick={handlePreviousButtonClick}
+            handleNextButtonClick={handleNextButtonClick}
+            handleLastButtonClick={handleLastButtonClick}
+            highlightedButton={highlightedButton}
+            isEditing={isEditing}
+          />
+
         </div>
-        <div style={{ float: "right", marginTop: "-40px" }}>
-      <button
-        style={{
-          border: "1px solid #ccc",
-          backgroundColor: highlightedButton === "first" ? "black" : "blue",
-          color: "white",
-          width: "100px",
-          height: "35px",
-          cursor: isEditing ? "not-allowed" : "pointer", 
-         
-        }}
-        onClick={() => handleFirstButtonClick()}
-        disabled={isEditing}
-      >
-        &lt;&lt;
-      </button>
-      <button
-        style={{
-          border: "1px solid #ccc",
-          backgroundColor: highlightedButton === "previous" ? "black" : "blue",
-          color: "white",
-          width: "100px",
-          height: "35px",
-          cursor: isEditing ? "not-allowed" : "pointer", 
-          
-        }}
-        onClick={() => handlePreviousButtonClick()}
-        disabled={isEditing}
-      >
-        &lt;
-      </button>
-      <button
-        style={{
-          border: "1px solid #ccc",
-          backgroundColor: highlightedButton === "next" ? "black" : "blue",
-          color: "white",
-          width: "100px",
-          height: "35px",
-          cursor: isEditing ? "not-allowed" : "pointer", 
-        }}
-        onClick={() => handleNextButtonClick()}
-        disabled={isEditing}
-      >
-        &gt;
-      </button>
-      <button
-        style={{
-          border: "1px solid #ccc",
-          backgroundColor: highlightedButton === "last" ? "black" : "blue",
-          color: "white",
-          width: "100px",
-          height: "35px",
-          cursor: isEditing ? "not-allowed" : "pointer", 
-        }}
-        onClick={() => handleLastButtonClick()}
-        disabled={isEditing}
-      >
-        &gt;&gt;
-      </button>
-    </div>
       </div>
 
       {/* Head Part */}
@@ -851,17 +692,14 @@ useEffect(() => {
 
         <div className="d-flex align-items-center ms-3">
           <label className="form-label">Mill Code:</label>
-          {/* Assuming ApiMill_Code handles its own state */}
           <ApiMill_Code
             acType="M"
             companyCode={1}
             name="Mill_Code"
             onAcCodeClick={handleMillCodeHead}
-            newMillCode={ newMillCode }
+            newMillCode={newMillCode}
           />
         </div>
-
-        
       </form>
 
       {/*detail part */}
@@ -876,7 +714,7 @@ useEffect(() => {
         <button
           className="btn btn-danger"
           disabled={!isEditing}
-          style={{marginLeft:"10px"}}
+          style={{ marginLeft: "10px" }}
         >
           Close
         </button>
@@ -904,7 +742,7 @@ useEffect(() => {
                 </div>
                 <div className="modal-body">
                   <form>
-                    <div className="form-group">
+                    <div className="form-group col-md-4">
                       <label>Buyer:</label>
                       <input
                         type="text"
@@ -913,7 +751,7 @@ useEffect(() => {
                         onChange={(e) => setName(e.target.value)}
                       />
                     </div>
-                    <div className="form-group">
+                    <div className="form-group col-md-4">
                       <label>Date:</label>
                       <input
                         type="date"
@@ -922,7 +760,7 @@ useEffect(() => {
                         onChange={(e) => setLifting_Date(e.target.value)}
                       />
                     </div>
-                    <div className="form-group">
+                    <div className="form-group col-md-4">
                       <label>Bags:</label>
                       <input
                         type="text"
@@ -931,6 +769,8 @@ useEffect(() => {
                         onChange={(e) => setUserId(e.target.value)}
                       />
                     </div>
+                   
+                    <label>Account help:</label>
                     <ApiMill_Code
                       acType="M"
                       companyCode={1}
@@ -984,8 +824,8 @@ useEffect(() => {
               <tr key={user.id}>
                 <td>
                   {user.rowaction === "add" ||
-                  user.rowaction === "update" ||
-                  user.rowaction === "Normal" ? (
+                    user.rowaction === "update" ||
+                    user.rowaction === "Normal" ? (
                     <>
                       <button
                         className="btn btn-warning"

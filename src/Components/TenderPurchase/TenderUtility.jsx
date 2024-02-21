@@ -13,9 +13,9 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import Pagination from "../UtilityCommon/Pagination";
-import SearchBar from "../UtilityCommon/SearchBar";
-import PerPageSelect from "../UtilityCommon/PerPageSelect";
+import Pagination from "../Common/UtilityCommon/Pagination";
+import SearchBar from "../Common/UtilityCommon/SearchBar";
+import PerPageSelect from "../Common/UtilityCommon/PerPageSelect";
 import axios from "axios";
 
 function TenderPurchaseUtility() {
@@ -45,8 +45,7 @@ function TenderPurchaseUtility() {
   useEffect(() => {
     const filtered = fetchedData.filter(post => {
       const searchTermLower = searchTerm.toLowerCase();
-  
-      // Convert all relevant fields to lowercase for case-insensitive search
+
       const tenderNoLower =  String(post.Tender_No)
       const tenderDateLower = (post.Tender_Date || '').toLowerCase();
       const millShortNameLower = (post.millshortname || '').toLowerCase();
@@ -58,7 +57,6 @@ function TenderPurchaseUtility() {
       const liftingDateLower = (post.Lifting_Date || '').toLowerCase();
       const tenderIdString = String(post.tenderid);
   
-      // Check if any field contains the search term
       return (
         (filterValue === "" || post.group_Type === filterValue) &&
         (tenderNoLower.includes(searchTermLower) ||
@@ -79,8 +77,6 @@ function TenderPurchaseUtility() {
   }, [searchTerm, filterValue, fetchedData]);
 
   
-
-
   const handlePerPageChange = (event) => {
     setPerPage(event.target.value);
     setCurrentPage(1);
@@ -108,9 +104,6 @@ function TenderPurchaseUtility() {
     console.log("selectedRecord",selectedRecord)
     navigate("/tender_head", { state: { selectedRecord } });
   };
-
-
-  
 
   const handleSearchClick = () => {
     setFilterValue("");
